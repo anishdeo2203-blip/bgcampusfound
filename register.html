@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#102b4e">
+<title>Student Registration | CampusFind · IIM Bodh Gaya</title>
+<style>
+:root{--navy:#102b4e;--navy2:#193f68;--gold:#e8bd67;--ink:#19283a;--muted:#657487;--line:#e2e8ef}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:linear-gradient(135deg,#edf2f7,#f8fafc);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;flex-direction:column}button,input{font:inherit}button{cursor:pointer}.topbar{background:var(--navy);color:white;padding:12px max(20px,calc((100% - 1180px)/2));display:flex;align-items:center;gap:15px;box-shadow:0 3px 14px #102b4e18}.crest{width:190px;height:82px;object-fit:contain;display:block}.brand-title{font-weight:850;font-size:19px}.brand-sub{font-size:10px;color:#c7d4e3;text-transform:uppercase;letter-spacing:1.3px;margin-top:3px}.crest-row{display:flex;align-items:center;gap:15px}.wrap{width:min(100% - 30px,520px);margin:auto;padding:38px 0}.card{background:white;border:1px solid var(--line);border-radius:20px;padding:30px;box-shadow:0 16px 45px #102b4e10}.badge{display:inline-flex;align-items:center;gap:7px;background:#edf5ef;color:#216345;padding:7px 10px;border-radius:999px;font-size:11px;font-weight:800}.card h1{color:var(--navy);font-size:29px;line-height:1.15;margin:16px 0 9px}.sub{color:var(--muted);font-size:14px;line-height:1.6;margin:0 0 22px}.field{display:flex;flex-direction:column;gap:7px;margin:15px 0}.field label{font-size:12px;font-weight:800;color:#405064}.field input{width:100%;border:1px solid #cfd9e4;border-radius:10px;padding:13px 14px;outline-color:#91b9df}.hint{font-size:11px;color:var(--muted);line-height:1.45}.btn{width:100%;border:0;border-radius:10px;padding:13px 16px;background:var(--gold);color:#17283c;font-weight:850}.btn.secondary{background:#edf2f7;color:var(--navy);margin-top:9px}.note{margin-top:17px;background:#fff7e7;border:1px solid #f0dfb8;border-radius:10px;padding:12px;color:#77551a;font-size:11px;line-height:1.55}.error{display:none;margin-top:12px;color:#a33131;font-size:12px;line-height:1.5}.success{display:none;margin-top:12px;color:#216345;background:#edf5ef;border-radius:10px;padding:11px;font-size:12px;line-height:1.5}.otp-demo{display:none;margin:12px 0;padding:12px;border:1px dashed #d5b15e;border-radius:10px;background:#fff9ec;color:#735116;font-size:12px;line-height:1.5}.otp-code{font-size:22px;font-weight:900;letter-spacing:5px;display:block;margin:5px 0;color:var(--navy)}.footer{padding:18px;text-align:center;color:#758397;font-size:11px}.wordmark{display:block;width:min(240px,75%);background:#fff;border-radius:8px;padding:6px;margin:0 auto 12px}.wordmark img{width:100%;display:block}@media(max-width:540px){.topbar{padding:12px 15px}.crest{width:150px;height:68px}.card{padding:23px 19px}.card h1{font-size:26px}}
+</style>
+<script>if(sessionStorage.getItem('campusfind_student_email'))location.replace('index.html');</script>
+</head>
+<body>
+<header class="topbar"><div class="crest-row"><img class="crest" src="assets/iim-bodh-gaya-crest.png" alt="IIM Bodh Gaya crest"><div><div class="brand-title">CampusFind</div><div class="brand-sub">IIM Bodh Gaya · Lost &amp; Found</div></div></div></header>
+<main class="wrap"><section class="card"><span class="badge">🎓 Student registration</span><h1>Create your account</h1><p class="sub">Register with your institute email, create a password, and verify the demo OTP to continue.</p>
+<form id="registerForm" novalidate>
+<div class="field"><label for="studentName">Full name</label><input id="studentName" autocomplete="name" required maxlength="80" placeholder="Your full name"></div>
+<div class="field"><label for="registrationNumber">College registration number</label><input id="registrationNumber" autocomplete="off" required maxlength="40" placeholder="Your institute registration number"></div>
+<div class="field"><label for="registerEmail">Institute email address</label><input id="registerEmail" type="email" autocomplete="email" required placeholder="name@iimbg.ac.in"></div>
+<div class="field"><label for="registerPassword">Create password</label><input id="registerPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="At least 8 characters"><span class="hint">Use at least 8 characters. A mix of letters, numbers and symbols is recommended.</span></div>
+<div class="field"><label for="confirmPassword">Confirm password</label><input id="confirmPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="Enter password again"></div>
+<button class="btn" id="sendOtpBtn" type="button">Generate verification OTP →</button>
+<div id="otpDemo" class="otp-demo" role="status">Demo OTP for this local prototype:<span id="otpCode" class="otp-code"></span><span>This code is displayed here for testing. No email is sent by this static website.</span></div>
+<div class="field" id="otpField" style="display:none"><label for="registerOtp">Enter 6-digit OTP</label><input id="registerOtp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="6-digit verification code"></div>
+<button class="btn" id="registerBtn" type="submit" style="display:none">Verify OTP &amp; create account</button>
+<p id="registerError" class="error" role="alert"></p><p id="registerSuccess" class="success" role="status"></p>
+</form>
+<p style="font-size:13px;text-align:center;margin:18px 0 0;color:var(--muted)">Already registered? <a href="login.html" style="color:var(--navy2);font-weight:800">Sign in</a></p>
+<div class="note"><strong>Important security note:</strong> This is a local demo OTP, not an email-delivered verification code. It does not prove that you own the institute mailbox. Real OTP delivery requires a backend/email service and server-side verification. Do not use real student registration details or a password you use elsewhere.</div>
+</section></main>
+<footer class="footer"><div class="wordmark"><img src="assets/iim-bodh-gaya-wordmark.png" alt="The Enlightening IIM Bodh Gaya"></div>CampusFind · Student-built prototype, not an official institute service</footer>
+<script>
+const ALLOWED_DOMAIN='@iimbg.ac.in';
+const USERS_KEY='campusfind_registered_students_v1';
+let pendingOtp=null, otpExpiresAt=0;
+const $=id=>document.getElementById(id);
+function showError(message){$('registerError').textContent=message;$('registerError').style.display='block';$('registerSuccess').style.display='none';}
+function validEmail(email){return email.endsWith(ALLOWED_DOMAIN)&&email.indexOf('@')===email.lastIndexOf('@')&&email.length>ALLOWED_DOMAIN.length;}
+$('sendOtpBtn').addEventListener('click',()=>{
+ $('registerError').style.display='none';
+ const email=$('registerEmail').value.trim().toLowerCase();
+ if(!$('studentName').value.trim()||!$('registrationNumber').value.trim()){showError('Please enter your full name and college registration number first.');return;}
+ if(!validEmail(email)){showError('Please use an institute email ending in '+ALLOWED_DOMAIN+'. Confirm the official domain with IIM Bodh Gaya IT if needed.');return;}
+ const password=$('registerPassword').value;
+ if(password.length<8){showError('Please create a password with at least 8 characters.');return;}
+ if(password!==$('confirmPassword').value){showError('The passwords do not match.');return;}
+ let users={};try{users=JSON.parse(localStorage.getItem(USERS_KEY)||'{}')}catch(_){users={};}
+ if(users[email]){showError('This email is already registered on this browser. Please sign in instead.');return;}
+ const arr=new Uint32Array(1);crypto.getRandomValues(arr);pendingOtp=String(arr[0]%1000000).padStart(6,'0');otpExpiresAt=Date.now()+5*60*1000;
+ $('otpCode').textContent=pendingOtp;$('otpDemo').style.display='block';$('otpField').style.display='flex';$('registerBtn').style.display='block';$('sendOtpBtn').textContent='Generate a new OTP';$('registerOtp').value='';
+});
+async function hashPassword(password){
+ if(!window.crypto||!crypto.subtle)throw new Error('Secure password hashing is unavailable in this browser. Open this project through HTTPS or localhost.');
+ const bytes=new TextEncoder().encode(password);const digest=await crypto.subtle.digest('SHA-256',bytes);return Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+$('registerForm').addEventListener('submit',async e=>{
+ e.preventDefault();$('registerError').style.display='none';$('registerSuccess').style.display='none';
+ const name=$('studentName').value.trim(),registrationNumber=$('registrationNumber').value.trim(),email=$('registerEmail').value.trim().toLowerCase(),password=$('registerPassword').value;
+ if(!pendingOtp){showError('Generate the verification OTP first.');return;}
+ if(Date.now()>otpExpiresAt){pendingOtp=null;showError('This OTP has expired. Generate a new OTP and try again.');return;}
+ if($('registerOtp').value.trim()!==pendingOtp){showError('The OTP is incorrect. Please check the code and try again.');return;}
+ if(password!==$('confirmPassword').value){showError('The passwords do not match.');return;}
+ if(!validEmail(email)){showError('Please enter a valid institute email address.');return;}
+ let users={};try{users=JSON.parse(localStorage.getItem(USERS_KEY)||'{}')}catch(_){users={};}
+ if(users[email]){showError('This email is already registered on this browser. Please sign in instead.');return;}
+ try{
+  const passwordHash=await hashPassword(password);
+  users[email]={name,registrationNumber,passwordHash,registeredAt:new Date().toISOString(),otpVerified:true,verificationType:'local-demo-otp'};
+  localStorage.setItem(USERS_KEY,JSON.stringify(users));
+ }catch(err){showError(err.message||'Could not save your account in this browser.');return;}
+ pendingOtp=null;$('registerSuccess').textContent='Demo OTP accepted and account created on this browser. Redirecting to sign in…';$('registerSuccess').style.display='block';
+ setTimeout(()=>location.href='login.html',1000);
+});
+</script>
+</body></html>
