@@ -5,9 +5,61 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#102b4e">
 <title>CampusFind | IIM Bodh Gaya</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-function signOutCampusFind(){sessionStorage.removeItem('campusfind_student_email');sessionStorage.removeItem('campusfind_student_name');location.reload();}
-document.addEventListener("DOMContentLoaded",()=>{const name=sessionStorage.getItem("campusfind_student_name")||"Guest";const el=document.getElementById("accountName");if(el){el.textContent=name;el.title=name;}const btn=document.getElementById("accountAction");if(btn){btn.textContent=sessionStorage.getItem("campusfind_student_email")?"Sign out":"Sign in";btn.onclick=()=>{if(sessionStorage.getItem("campusfind_student_email")) signOutCampusFind(); else location.href="login.html";};}});
+const SUPABASE_URL='https://wesajxsasftnrrnrtkrs.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_NxhXpmOqpRM_gECgdnLixw_UPNuIxAg';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+let campusfindUser=null;
+let campusfindAuthReady=null;
+
+function setCampusFindAccount(user){
+  campusfindUser=user||null;
+  const email=(user?.email||'').toLowerCase();
+  const name=user?.user_metadata?.full_name||user?.user_metadata?.name||email.split('@')[0]||'Guest';
+  if(user){
+    sessionStorage.setItem('campusfind_student_email',email);
+    sessionStorage.setItem('campusfind_student_name',name);
+  }else{
+    sessionStorage.removeItem('campusfind_student_email');
+    sessionStorage.removeItem('campusfind_student_name');
+  }
+  const el=document.getElementById('accountName');
+  if(el){el.textContent=name;el.title=name;}
+  const btn=document.getElementById('accountAction');
+  if(btn){btn.textContent=user?'Sign out':'Sign in';btn.onclick=()=>user?signOutCampusFind():(location.href='login.html');}
+}
+
+async function initCampusFindAuth(){
+  const {data:{session},error}=await sb.auth.getSession();
+  if(error){console.error('CampusFind auth error:',error);setCampusFindAccount(null);return null;}
+  const user=session?.user||null;
+  if(user && !(user.email||'').toLowerCase().endsWith('@iimbg.ac.in')){
+    await sb.auth.signOut();
+    alert('Please sign in with your IIM Bodh Gaya Google account.');
+    setCampusFindAccount(null);
+    return null;
+  }
+  setCampusFindAccount(user);
+  return user;
+}
+
+async function signOutCampusFind(){
+  await sb.auth.signOut();
+  setCampusFindAccount(null);
+  location.reload();
+}
+
+campusfindAuthReady=initCampusFindAuth();
+sb.auth.onAuthStateChange((_event,session)=>{
+  setCampusFindAccount(session?.user||null);
+});
+
+document.addEventListener('DOMContentLoaded',async()=>{
+  await campusfindAuthReady;
+  const btn=document.getElementById('accountAction');
+  if(btn && !campusfindUser){btn.textContent='Sign in';btn.onclick=()=>location.href='login.html';}
+});
 </script>
 <style>
 :root{--navy:#102b4e;--navy2:#193f68;--gold:#e8bd67;--ink:#19283a;--muted:#657487;--bg:#f4f6f9;--line:#e2e8ef;--green:#177653;--red:#9c5b12;--white:#fff}
@@ -117,7 +169,7 @@ function renderItems(){
 }
 function resetFilters(){document.getElementById("searchInput").value="";document.getElementById("categoryFilter").value="";document.getElementById("locationFilter").value="";setTab("all",document.querySelector('[data-tab="all"]'));}
 function scrollToListings(){document.getElementById("listings").scrollIntoView({behavior:"smooth"});}
-function openReport(type){if(!sessionStorage.getItem("campusfind_student_email")){sessionStorage.setItem("campusfind_pending_report_type",type);showToast("Please sign in before adding a lost or found item.");setTimeout(()=>{location.href="login.html";},700);return;}document.getElementById("reportForm").reset();document.getElementById("imagePreview").style.display="none";document.getElementById("imagePreview").removeAttribute("src");document.getElementById("reportType").value=type;document.getElementById("itemDate").value=dateOffset(0);document.getElementById("itemTime").value="";document.getElementById("reportTitle").textContent=type==="lost"?"Report a lost item":"Report a found item";document.getElementById("reportBackdrop").classList.add("open");}
+async function openReport(type){const user=await campusfindAuthReady;if(!user){sessionStorage.setItem("campusfind_pending_report_type",type);showToast("Please sign in before adding a lost or found item.");setTimeout(()=>{location.href="login.html";},700);return;}document.getElementById("reportForm").reset();document.getElementById("imagePreview").style.display="none";document.getElementById("imagePreview").removeAttribute("src");document.getElementById("reportType").value=type;document.getElementById("itemDate").value=dateOffset(0);document.getElementById("itemTime").value="";document.getElementById("reportTitle").textContent=type==="lost"?"Report a lost item":"Report a found item";document.getElementById("reportBackdrop").classList.add("open");}
 function closeModal(id){document.getElementById(id).classList.remove("open");}
 function backdropClose(e,id){if(e.target.id===id)closeModal(id);}
 function showToast(msg){const t=document.getElementById("toast");t.textContent=msg;t.style.display="block";clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>t.style.display="none",3000);}
