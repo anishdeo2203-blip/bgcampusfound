@@ -9,14 +9,22 @@
 <script>
 const SUPABASE_URL='https://wesajxsasftnrrnrtkrs.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_NxhXpmOqpRM_gECgdnLixw_UPNuIxAg';
-const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce'}});
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const ALLOWED_DOMAIN='@iimbg.ac.in';
 let campusfindUser=null;
-let campusfindAuthReady=null;
+let campusfindAuthReady=Promise.resolve(null);
 
 function setCampusFindAccount(user){
   campusfindUser=user||null;
   const email=(user?.email||'').toLowerCase();
   const name=user?.user_metadata?.full_name||user?.user_metadata?.name||email.split('@')[0]||'Guest';
+  const el=document.getElementById('accountName');
+  if(el){el.textContent=name;el.title=name;}
+  const btn=document.getElementById('accountAction');
+  if(btn){
+    btn.textContent=user?'Sign out':'Sign in';
+    btn.onclick=user?signOutCampusFind:goToLogin;
+  }
   if(user){
     sessionStorage.setItem('campusfind_student_email',email);
     sessionStorage.setItem('campusfind_student_name',name);
@@ -24,27 +32,15 @@ function setCampusFindAccount(user){
     sessionStorage.removeItem('campusfind_student_email');
     sessionStorage.removeItem('campusfind_student_name');
   }
-  const el=document.getElementById('accountName');
-  if(el){el.textContent=name;el.title=name;}
-  const btn=document.getElementById('accountAction');
-  if(btn){btn.textContent=user?'Sign out':'Sign in';btn.onclick=()=>user?signOutCampusFind():(location.href='login.html');}
 }
 
+function goToLogin(){ window.location.assign('login.html'); }
+
 async function initCampusFindAuth(){
-  try{
-    const url=new URL(window.location.href);
-    const code=url.searchParams.get('code');
-    if(code){
-      const {error:exchangeError}=await sb.auth.exchangeCodeForSession(code);
-      if(exchangeError) console.error('CampusFind OAuth exchange error:',exchangeError);
-      url.searchParams.delete('code');
-      window.history.replaceState({},document.title,url.pathname+url.search+url.hash);
-    }
-  }catch(e){console.error('CampusFind OAuth callback error:',e);}
   const {data:{session},error}=await sb.auth.getSession();
   if(error){console.error('CampusFind auth error:',error);setCampusFindAccount(null);return null;}
   const user=session?.user||null;
-  if(user && !(user.email||'').toLowerCase().endsWith('@iimbg.ac.in')){
+  if(user && !(user.email||'').toLowerCase().endsWith(ALLOWED_DOMAIN)){
     await sb.auth.signOut();
     alert('Please sign in with your IIM Bodh Gaya Google account.');
     setCampusFindAccount(null);
@@ -54,21 +50,29 @@ async function initCampusFindAuth(){
   return user;
 }
 
-async function signOutCampusFind(){
-  await sb.auth.signOut();
-  setCampusFindAccount(null);
-  location.reload();
+async function refreshCampusFindAuth(){
+  campusfindAuthReady=initCampusFindAuth();
+  return campusfindAuthReady;
 }
 
-campusfindAuthReady=initCampusFindAuth();
+async function signOutCampusFind(){
+  await sb.auth.signOut();
+  campusfindUser=null;
+  setCampusFindAccount(null);
+}
+
 sb.auth.onAuthStateChange((_event,session)=>{
-  setCampusFindAccount(session?.user||null);
+  const user=session?.user||null;
+  if(user && !(user.email||'').toLowerCase().endsWith(ALLOWED_DOMAIN)) return;
+  setCampusFindAccount(user);
 });
 
-document.addEventListener('DOMContentLoaded',async()=>{
-  await campusfindAuthReady;
-  const btn=document.getElementById('accountAction');
-  if(btn && !campusfindUser){btn.textContent='Sign in';btn.onclick=()=>location.href='login.html';}
+document.addEventListener('DOMContentLoaded',()=>{
+  refreshCampusFindAuth();
+});
+
+window.addEventListener('pageshow',()=>{
+  refreshCampusFindAuth();
 });
 </script>
 <style>
