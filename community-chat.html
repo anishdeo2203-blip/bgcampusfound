@@ -29,24 +29,18 @@ main{max-width:1050px;margin:auto;padding:30px 22px 56px}.intro{background:linea
 </main>
 <footer><div class="footer-brand"><img src="assets/iim-bodh-gaya-wordmark.png" alt="The Enlightening IIM Bodh Gaya"></div><br><strong>CampusFind · IIM Bodh Gaya</strong><div class="footer-small">A student-built Lost &amp; Found portal concept · Unofficial prototype for IT Committee selection</div></footer><div class="toast" id="toast" role="status"></div>
 <script>
-const CHAT_STORAGE_KEY = "campusfind_iimbg_chat_v1";
-const demoChatMessages = [
+const demoChatMessages=[
  {id:"chat-demo-1",name:"Sample Student",message:"Has anyone seen a blue water bottle near the Academic Building? Please check the item board too.",createdAt:"2026-10-02T06:30:00.000Z",demo:true},
  {id:"chat-demo-2",name:"Sample Campus Desk",message:"A notebook was found near Annapurna Mess. Please use the Found tab and verify identifying details before collecting it.",createdAt:"2026-10-02T06:15:00.000Z",demo:true}
 ];
-function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
-function loadMessages(){try{const saved=localStorage.getItem(CHAT_STORAGE_KEY);if(saved){const parsed=JSON.parse(saved);if(Array.isArray(parsed))return parsed;}}catch(e){}return demoChatMessages.map(m=>({...m}));}
-let chatMessages=loadMessages();
-const signedInName=sessionStorage.getItem("campusfind_student_name")||"Student";
-document.getElementById("accountName").textContent=signedInName;
-document.getElementById("accountName").title=signedInName;
-function saveMessages(){try{localStorage.setItem(CHAT_STORAGE_KEY,JSON.stringify(chatMessages));}catch(e){toast("Could not save chat in this browser. Check storage settings.");}}
+let chatMessages=[];
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':'&quot;',"'":"&#39;"}[c]));}
 function formatDate(value){const d=new Date(value);if(Number.isNaN(d.getTime()))return "Just now";return d.toLocaleString("en-IN",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"});}
-function renderMessages(){const feed=document.getElementById("chatFeed");feed.innerHTML=chatMessages.length?chatMessages.slice(-30).reverse().map(m=>`<article class="chat-message"><div class="chat-message-top"><strong>${esc(m.name)}${m.demo?'<span class="demo-chip">SAMPLE</span>':''}</strong><span class="chat-time">${esc(formatDate(m.createdAt))}</span></div><p>${esc(m.message)}</p></article>`).join(""):'<div class="empty">No messages yet. Start the campus conversation.</div>';}
-function toast(message){const el=document.getElementById("toast");el.textContent=message;el.style.display="block";window.setTimeout(()=>el.style.display="none",2600);}
-document.getElementById("chatForm").addEventListener("submit",e=>{e.preventDefault();const name=signedInName,message=document.getElementById("chatMessage").value.trim();if(!message){toast("Please enter a message.");return;}chatMessages.push({id:"chat-"+Date.now()+"-"+Math.random().toString(36).slice(2,6),name,message,createdAt:new Date().toISOString(),demo:false});chatMessages=chatMessages.slice(-100);saveMessages();document.getElementById("chatMessage").value="";renderMessages();toast("Message added to this browser's demo chat.");});
-window.addEventListener("storage",e=>{if(e.key===CHAT_STORAGE_KEY){chatMessages=loadMessages();renderMessages();}});
-renderMessages();
+async function loadMessages(){const {data,error}=await sb.from('chat_messages').select('*').order('created_at',{ascending:false}).limit(50);if(error)throw error;chatMessages=data.map(m=>({id:m.id,name:m.user_name,message:m.message,createdAt:m.created_at,demo:false}));chatMessages=[...chatMessages,...demoChatMessages];}
+function renderMessages(){const feed=document.getElementById('chatFeed');feed.innerHTML=chatMessages.length?chatMessages.slice(0,50).map(m=>`<article class="chat-message"><div class="chat-message-top"><strong>${esc(m.name)}${m.demo?'<span class="demo-chip">SAMPLE</span>':''}</strong><span class="chat-time">${esc(formatDate(m.createdAt))}</span></div><p>${esc(m.message)}</p></article>`).join(''):'<div class="empty">No messages yet. Start the campus conversation.</div>';}
+function toast(message){const el=document.getElementById('toast');el.textContent=message;el.style.display='block';window.setTimeout(()=>el.style.display='none',2600);}
+document.getElementById('chatForm').addEventListener('submit',async e=>{e.preventDefault();const message=document.getElementById('chatMessage').value.trim();if(!message)return;if(!currentUser){location.replace('login.html');return;}const name=currentUser.user_metadata?.full_name||currentUser.user_metadata?.name||'Student';const avatar=currentUser.user_metadata?.avatar_url||currentUser.user_metadata?.picture||null;const {data,error}=await sb.from('chat_messages').insert({user_id:currentUser.id,user_name:name,user_avatar_url:avatar,message}).select().single();if(error){toast(error.message||'Could not send message.');return;}chatMessages.unshift({id:data.id,name:data.user_name,message:data.message,createdAt:data.created_at,demo:false});chatMessages=chatMessages.slice(0,50);document.getElementById('chatMessage').value='';renderMessages();toast('Message shared with the campus.');});
+(async()=>{const ok=await initChatAuth();if(!ok)return;document.getElementById('accountName').textContent=currentUser.user_metadata?.full_name||currentUser.user_metadata?.name||'Student';try{await loadMessages();renderMessages();}catch(e){console.error(e);chatMessages=demoChatMessages;renderMessages();toast('Could not load shared chat.');}})();
 </script>
 </body>
 </html>
