@@ -11,7 +11,7 @@
 <script>
 const SUPABASE_URL='https://wesajxsasftnrrnrtkrs.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_NxhXpmOqpRM_gECgdnLixw_UPNuIxAg';
-const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce'}});
 const ALLOWED_DOMAIN='@iimbg.ac.in';
 async function ensureSignedOutIfWrongDomain(){
   const {data:{session}}=await sb.auth.getSession();
