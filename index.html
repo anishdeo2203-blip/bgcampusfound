@@ -5,15 +5,64 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#102b4e">
 <title>CampusFind | IIM Bodh Gaya</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-function signOutCampusFind(){sessionStorage.removeItem('campusfind_student_email');sessionStorage.removeItem('campusfind_student_name');location.reload();}
-document.addEventListener("DOMContentLoaded",()=>{const name=sessionStorage.getItem("campusfind_student_name")||"Guest";const el=document.getElementById("accountName");if(el){el.textContent=name;el.title=name;}const btn=document.getElementById("accountAction");if(btn){btn.textContent=sessionStorage.getItem("campusfind_student_email")?"Sign out":"Sign in";btn.onclick=()=>{if(sessionStorage.getItem("campusfind_student_email")) signOutCampusFind(); else location.href="login.html";};}});
+const SUPABASE_URL = "https://wesajxsasftnrrnrtkrs.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "PASTE_YOUR_SUPABASE_PUBLISHABLE_KEY_HERE";
+const campusfindSupabase = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+let campusfindAuthReady;
+async function initCampusFindAuth(){
+  const {data:{session}} = await campusfindSupabase.auth.getSession();
+  const user=session?.user||null;
+  if(user){
+    const email=user.email||"";
+    const name=user.user_metadata?.full_name||user.user_metadata?.name||email.split("@")[0]||"Student";
+    sessionStorage.setItem("campusfind_student_email",email);
+    sessionStorage.setItem("campusfind_student_name",name);
+  }else{
+    sessionStorage.removeItem("campusfind_student_email");
+    sessionStorage.removeItem("campusfind_student_name");
+  }
+  updateCampusFindAccount();
+  return user;
+}
+function updateCampusFindAccount(){
+  const name=sessionStorage.getItem("campusfind_student_name")||"Guest";
+  const el=document.getElementById("accountName");
+  if(el){el.textContent=name;el.title=name;}
+  const btn=document.getElementById("accountAction");
+  if(btn){
+    const signedIn=!!sessionStorage.getItem("campusfind_student_email");
+    btn.textContent=signedIn?"Sign out":"Sign in";
+    btn.onclick=()=>signedIn?signOutCampusFind():(location.href="login.html");
+  }
+}
+async function signOutCampusFind(){
+  await campusfindSupabase.auth.signOut();
+  sessionStorage.removeItem("campusfind_student_email");
+  sessionStorage.removeItem("campusfind_student_name");
+  location.reload();
+}
+campusfindAuthReady=initCampusFindAuth();
+campusfindSupabase.auth.onAuthStateChange((_event,session)=>{
+  if(session?.user){
+    const user=session.user;
+    const email=user.email||"";
+    const name=user.user_metadata?.full_name||user.user_metadata?.name||email.split("@")[0]||"Student";
+    sessionStorage.setItem("campusfind_student_email",email);
+    sessionStorage.setItem("campusfind_student_name",name);
+  }else{
+    sessionStorage.removeItem("campusfind_student_email");
+    sessionStorage.removeItem("campusfind_student_name");
+  }
+  updateCampusFindAccount();
+});
 </script>
 <style>
 :root{--navy:#102b4e;--navy2:#193f68;--gold:#e8bd67;--ink:#19283a;--muted:#657487;--bg:#f4f6f9;--line:#e2e8ef;--green:#177653;--red:#9c5b12;--white:#fff}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #91b9df;outline-offset:2px}
 .topbar{background:var(--navy);color:white;padding:12px max(20px,calc((100% - 1180px)/2));display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;box-shadow:0 3px 14px #102b4e18}.brand{display:flex;align-items:center;gap:12px}.crest{width:190px;height:82px;flex:0 0 190px;object-fit:contain;display:block}.brand{gap:15px}.brand-title{font-size:20px}.brand-title{font-weight:800;font-size:18px;letter-spacing:.2px}.brand-sub{font-size:10px;color:#c7d4e3;text-transform:uppercase;letter-spacing:1.3px;margin-top:3px}.nav{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.nav button{border:0;background:transparent;color:#e7edf4;padding:10px 12px;border-radius:8px}.nav button:hover{background:#ffffff15}.nav .nav-cta{background:var(--gold);color:#1b2b3c;font-weight:800}.account-pill{display:flex;align-items:center;gap:8px;color:#fff;background:#ffffff12;border:1px solid #ffffff35;border-radius:999px;padding:5px 11px 5px 5px;font-size:12px;font-weight:750;max-width:190px}.account-avatar{width:31px;height:31px;border-radius:50%;display:grid;place-items:center;background:#f6dca3;border:1px solid #fff5;font-size:21px;line-height:1;flex:0 0 31px}.account-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:125px}
-main{max-width:1180px;margin:auto;padding:27px 22px 56px}.hero{position:relative;overflow:hidden;border-radius:20px;padding:37px;background:linear-gradient(90deg,rgba(10,31,57,.97) 0%,rgba(16,43,78,.91) 43%,rgba(16,43,78,.55) 100%),url('campus-building.jpg') center 48%/cover no-repeat;color:white;display:grid;grid-template-columns:1.35fr .65fr;align-items:center;gap:25px;min-height:330px}.hero:after{content:"";position:absolute;right:-110px;top:-170px;width:390px;height:390px;border:1px solid #ffffff20;border-radius:50%;box-shadow:0 0 0 35px #ffffff08,0 0 0 75px #ffffff06;pointer-events:none}.hero>div:first-child{position:relative;z-index:2}.hero-art{position:relative;z-index:1;display:grid;place-items:center;min-height:190px}.hero-art:before{content:"";position:absolute;width:210px;height:210px;border-radius:50%;background:#ffffff12;border:1px solid #ffffff35;box-shadow:0 0 0 18px #ffffff08,0 0 0 38px #ffffff06}.eyebrow{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#f3ce80;font-weight:850}.hero h1{font-size:clamp(31px,4vw,48px);line-height:1.08;margin:12px 0}.hero p{max-width:570px;color:#d8e3ef;line-height:1.65;margin:0 0 20px}.hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:13px}.btn{border:0;border-radius:9px;padding:12px 16px;font-weight:800}.gold{background:var(--gold);color:#17283c}.outline{background:#ffffff12;color:white;border:1px solid #ffffff55}.searchbox{display:flex;gap:8px;background:white;padding:7px;border-radius:11px;max-width:610px}.searchbox input{border:0;outline:0;flex:1;min-width:0;padding:10px;color:var(--ink)}.searchbox button{border:0;border-radius:8px;padding:10px 15px;background:var(--gold);font-weight:850;color:#1b2b3c}.hero-art{position:relative;z-index:1;display:grid;place-items:center}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:20px 0 28px}.stat{display:flex;align-items:center;gap:13px;background:white;border:1px solid var(--line);border-radius:13px;padding:16px 19px}.stat-icon{width:42px;height:42px;flex:0 0 42px;border-radius:12px;background:#edf3f8;display:grid;place-items:center;font-size:20px}.stat strong{display:block;font-size:24px;color:var(--navy)}.stat span{font-size:12px;color:var(--muted)}
+main{max-width:1180px;margin:auto;padding:27px 22px 56px}.hero{position:relative;overflow:hidden;border-radius:20px;padding:37px;background:linear-gradient(90deg,rgba(10,31,57,.97) 0%,rgba(16,43,78,.91) 43%,rgba(16,43,78,.55) 100%),url('assets/campus-building.jpg') center 48%/cover no-repeat;color:white;display:grid;grid-template-columns:1.35fr .65fr;align-items:center;gap:25px;min-height:330px}.hero:after{content:"";position:absolute;right:-110px;top:-170px;width:390px;height:390px;border:1px solid #ffffff20;border-radius:50%;box-shadow:0 0 0 35px #ffffff08,0 0 0 75px #ffffff06;pointer-events:none}.hero>div:first-child{position:relative;z-index:2}.hero-art{position:relative;z-index:1;display:grid;place-items:center;min-height:190px}.hero-art:before{content:"";position:absolute;width:210px;height:210px;border-radius:50%;background:#ffffff12;border:1px solid #ffffff35;box-shadow:0 0 0 18px #ffffff08,0 0 0 38px #ffffff06}.eyebrow{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#f3ce80;font-weight:850}.hero h1{font-size:clamp(31px,4vw,48px);line-height:1.08;margin:12px 0}.hero p{max-width:570px;color:#d8e3ef;line-height:1.65;margin:0 0 20px}.hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:13px}.btn{border:0;border-radius:9px;padding:12px 16px;font-weight:800}.gold{background:var(--gold);color:#17283c}.outline{background:#ffffff12;color:white;border:1px solid #ffffff55}.searchbox{display:flex;gap:8px;background:white;padding:7px;border-radius:11px;max-width:610px}.searchbox input{border:0;outline:0;flex:1;min-width:0;padding:10px;color:var(--ink)}.searchbox button{border:0;border-radius:8px;padding:10px 15px;background:var(--gold);font-weight:850;color:#1b2b3c}.hero-art{position:relative;z-index:1;display:grid;place-items:center}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:20px 0 28px}.stat{display:flex;align-items:center;gap:13px;background:white;border:1px solid var(--line);border-radius:13px;padding:16px 19px}.stat-icon{width:42px;height:42px;flex:0 0 42px;border-radius:12px;background:#edf3f8;display:grid;place-items:center;font-size:20px}.stat strong{display:block;font-size:24px;color:var(--navy)}.stat span{font-size:12px;color:var(--muted)}
 .section-head{display:flex;justify-content:space-between;align-items:end;gap:14px;flex-wrap:wrap;margin:27px 0 15px}.section-head h2{font-size:23px;margin:0 0 5px;color:var(--navy)}.section-head p{margin:0;color:var(--muted);font-size:13px}.filters{display:flex;gap:8px;flex-wrap:wrap}.filters select{border:1px solid var(--line);background:white;border-radius:9px;padding:10px;color:#334155}.tabs{display:flex;gap:5px;background:#e8edf3;padding:5px;border-radius:10px;width:max-content;max-width:100%;margin-bottom:15px}.tabs button{border:0;background:transparent;padding:9px 15px;border-radius:7px;color:#596879;font-weight:750}.tabs button.active{background:white;color:var(--navy);box-shadow:0 1px 4px #152b4215}
 .cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.item{background:white;border:1px solid var(--line);border-radius:14px;overflow:hidden;transition:transform .15s,box-shadow .15s}.item:hover{transform:translateY(-2px);box-shadow:0 9px 22px #172b4210}.item-visual{height:150px;background:linear-gradient(135deg,#e9eff5,#dce7f0);display:block;position:relative;overflow:hidden}.item-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;z-index:0}.item-visual .tag{z-index:2}.item-visual .emoji{position:absolute;inset:0;display:grid;place-items:center;z-index:1}.item-content{position:relative;z-index:1;display:block;background:#fff;min-width:0}.item-content h3,.item-content .meta,.item-content p,.item-content .item-bottom{position:relative;z-index:1}.upload-preview{display:none;width:100%;max-height:190px;object-fit:contain;background:#f3f6f9;border:1px solid var(--line);border-radius:9px;margin-top:8px}.detail-photo{display:block;position:relative;width:100%;max-height:260px;object-fit:contain;background:#f3f6f9;border-radius:10px;margin:0 auto 16px}.detail-line{display:flex;align-items:flex-start;gap:12px;line-height:1.5;color:var(--ink)}.detail-line b{display:block;flex:0 0 112px;width:112px;color:#526176}.detail-line:not(:has(b)){display:block}#detailContent{display:block;visibility:visible;color:var(--ink)}.emoji{font-size:52px;filter:drop-shadow(0 5px 3px #20304015)}.tag{position:absolute;top:11px;left:11px;border-radius:6px;padding:5px 8px;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;background:#e2f3e9;color:#176747}.tag.lost{background:#fff0d6;color:#925800}.tag.recovered{background:#e5e9f6;color:#40518b}.item-content{padding:16px 15px 15px}.item-content h3{font-size:16px;color:var(--navy);margin:0 0 7px}.meta{font-size:12px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap}.item-content p{font-size:13px;line-height:1.5;color:#526174;min-height:38px;margin:12px 0}.item-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px solid #eef1f5;padding-top:11px}.date{font-size:11px;color:#7a8796}.linkbtn{border:0;background:transparent;color:#1b527f;font-weight:850;font-size:12px;padding:6px 0}.empty{grid-column:1/-1;padding:38px;text-align:center;background:white;border:1px dashed #cbd5e1;border-radius:14px;color:var(--muted)}
 .how{margin-top:38px;background:white;border:1px solid var(--line);border-radius:16px;padding:23px}.how h2{margin:0 0 18px;color:var(--navy);font-size:20px}.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}.step{display:flex;gap:12px}.step-num{width:32px;height:32px;flex:0 0 32px;border-radius:10px;background:#edf3f9;color:var(--navy2);display:grid;place-items:center;font-weight:900}.step strong{font-size:14px}.step p{margin:5px 0 0;color:var(--muted);font-size:12px;line-height:1.55}.safety{margin-top:16px;background:#fff8e9;border:1px solid #f0dfb8;border-radius:12px;padding:14px 16px;color:#77551a;font-size:12px;line-height:1.6}
@@ -26,7 +75,7 @@ footer{background:#0b2039;color:#b8c6d7;padding:22px;text-align:center;font-size
 </head>
 <body>
 <header class="topbar">
-  <div class="brand"><img class="crest" src="iim-bodh-gaya-crest.png" alt="IIM Bodh Gaya crest"><div><div class="brand-title">CampusFind</div><div class="brand-sub">IIM Bodh Gaya · Lost & Found</div></div></div>
+  <div class="brand"><img class="crest" src="assets/iim-bodh-gaya-crest.png" alt="IIM Bodh Gaya crest"><div><div class="brand-title">CampusFind</div><div class="brand-sub">IIM Bodh Gaya · Lost & Found</div></div></div>
   <nav class="nav" aria-label="Main navigation"><div class="account-pill" title="Signed-in account"><span class="account-avatar" aria-hidden="true">🧑🏻‍🎓</span><span class="account-name" id="accountName">Student</span></div><button onclick="openReport('found')">I found something</button><button class="nav-chat" onclick="window.location.href='community-chat.html'">Community chat ↗</button><button class="nav-cta" onclick="openReport('lost')">＋ Report an item</button><button id="accountAction" title="Account action">Sign in</button></nav>
 </header>
 <main>
@@ -57,7 +106,7 @@ footer{background:#0b2039;color:#b8c6d7;padding:22px;text-align:center;font-size
     <div class="step"><div class="step-num">3</div><div><strong>Reconnect safely</strong><p>Contact the reporter and verify ownership before handing an item over.</p></div></div>
   </div><div class="safety"><strong>Safety reminder:</strong> This is a demo prototype. Do not publish passwords, full ID numbers, financial details, or sensitive personal information. Verify ownership and arrange handovers in a safe campus location.</div></section>
 </main>
-<footer><div class="footer-brand"><img src="iim-bodh-gaya-wordmark.png" alt="The Enlightening IIM Bodh Gaya"></div><br><strong>CampusFind · IIM Bodh Gaya</strong><div class="footer-small">A student-built Lost & Found portal concept · Unofficial prototype for IT Committee selection</div></footer>
+<footer><div class="footer-brand"><img src="assets/iim-bodh-gaya-wordmark.png" alt="The Enlightening IIM Bodh Gaya"></div><br><strong>CampusFind · IIM Bodh Gaya</strong><div class="footer-small">A student-built Lost & Found portal concept · Unofficial prototype for IT Committee selection</div></footer>
 
 <div class="backdrop" id="reportBackdrop" role="dialog" aria-modal="true" aria-labelledby="reportTitle" onclick="backdropClose(event,'reportBackdrop')">
   <div class="modal"><div class="modal-head"><h2 id="reportTitle">Report an item</h2><button class="close" aria-label="Close" onclick="closeModal('reportBackdrop')">×</button></div>
@@ -117,7 +166,7 @@ function renderItems(){
 }
 function resetFilters(){document.getElementById("searchInput").value="";document.getElementById("categoryFilter").value="";document.getElementById("locationFilter").value="";setTab("all",document.querySelector('[data-tab="all"]'));}
 function scrollToListings(){document.getElementById("listings").scrollIntoView({behavior:"smooth"});}
-function openReport(type){if(!sessionStorage.getItem("campusfind_student_email")){sessionStorage.setItem("campusfind_pending_report_type",type);showToast("Please sign in before adding a lost or found item.");setTimeout(()=>{location.href="login.html";},700);return;}document.getElementById("reportForm").reset();document.getElementById("imagePreview").style.display="none";document.getElementById("imagePreview").removeAttribute("src");document.getElementById("reportType").value=type;document.getElementById("itemDate").value=dateOffset(0);document.getElementById("itemTime").value="";document.getElementById("reportTitle").textContent=type==="lost"?"Report a lost item":"Report a found item";document.getElementById("reportBackdrop").classList.add("open");}
+async function openReport(type){const user=await campusfindAuthReady;if(!user){sessionStorage.setItem("campusfind_pending_report_type",type);showToast("Please sign in before adding a lost or found item.");setTimeout(()=>{location.href="login.html";},700);return;}document.getElementById("reportForm").reset();document.getElementById("imagePreview").style.display="none";document.getElementById("imagePreview").removeAttribute("src");document.getElementById("reportType").value=type;document.getElementById("itemDate").value=dateOffset(0);document.getElementById("itemTime").value="";document.getElementById("reportTitle").textContent=type==="lost"?"Report a lost item":"Report a found item";document.getElementById("reportBackdrop").classList.add("open");}
 function closeModal(id){document.getElementById(id).classList.remove("open");}
 function backdropClose(e,id){if(e.target.id===id)closeModal(id);}
 function showToast(msg){const t=document.getElementById("toast");t.textContent=msg;t.style.display="block";clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>t.style.display="none",3000);}
