@@ -9,7 +9,7 @@
 <script>
 const SUPABASE_URL='https://wesajxsasftnrrnrtkrs.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_NxhXpmOqpRM_gECgdnLixw_UPNuIxAg';
-const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce'}});
 let campusfindUser=null;
 let campusfindAuthReady=null;
 
@@ -31,6 +31,16 @@ function setCampusFindAccount(user){
 }
 
 async function initCampusFindAuth(){
+  try{
+    const url=new URL(window.location.href);
+    const code=url.searchParams.get('code');
+    if(code){
+      const {error:exchangeError}=await sb.auth.exchangeCodeForSession(code);
+      if(exchangeError) console.error('CampusFind OAuth exchange error:',exchangeError);
+      url.searchParams.delete('code');
+      window.history.replaceState({},document.title,url.pathname+url.search+url.hash);
+    }
+  }catch(e){console.error('CampusFind OAuth callback error:',e);}
   const {data:{session},error}=await sb.auth.getSession();
   if(error){console.error('CampusFind auth error:',error);setCampusFindAccount(null);return null;}
   const user=session?.user||null;
