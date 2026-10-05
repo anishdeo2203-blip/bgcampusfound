@@ -11,7 +11,7 @@
 <script>
 const SUPABASE_URL='https://wesajxsasftnrrnrtkrs.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_NxhXpmOqpRM_gECgdnLixw_UPNuIxAg';
-const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce'}});
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 const ALLOWED_DOMAIN='@iimbg.ac.in';
 async function ensureSignedOutIfWrongDomain(){
   const {data:{session}}=await sb.auth.getSession();
@@ -31,12 +31,12 @@ ensureSignedOutIfWrongDomain();
 </script>
 </head>
 <body>
-<header class="topbar"><div class="crest-row"><img class="crest" src="assets/iim-bodh-gaya-crest.png" alt="IIM Bodh Gaya crest"><div><div class="brand-title">CampusFind</div><div class="brand-sub">IIM Bodh Gaya · Lost &amp; Found</div></div></div></header>
+<header class="topbar"><div class="crest-row"><img class="crest" src="iim-bodh-gaya-crest.png" alt="IIM Bodh Gaya crest"><div><div class="brand-title">CampusFind</div><div class="brand-sub">IIM Bodh Gaya · Lost &amp; Found</div></div></div></header>
 <main class="wrap"><section class="card"><span class="badge">🔒 Student access</span><h1>Sign in to CampusFind</h1><p class="sub">Sign in securely with your IIM Bodh Gaya Google account.</p>
 <button class="btn" id="googleLogin" type="button" style="display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;border:1px solid #cfd9e4;color:#26364a;box-shadow:0 1px 2px #0001"><span style="font-size:20px">G</span> Continue with Google</button><p id="loginError" class="error" role="alert"></p><p style="font-size:13px;text-align:center;margin:18px 0 0;color:var(--muted)">Use your IIM Bodh Gaya Google account to continue.</p>
 <div class="note"><strong>Google sign-in:</strong> CampusFind uses Supabase Authentication for Google login. Use your institute Google account ending in <strong>@iimbg.ac.in</strong>.</div>
 </section></main>
-<footer class="footer"><div class="wordmark"><img src="assets/iim-bodh-gaya-wordmark.png" alt="The Enlightening IIM Bodh Gaya"></div>CampusFind · Student-built prototype, not an official institute service</footer>
+<footer class="footer"><div class="wordmark"><img src="iim-bodh-gaya-wordmark.png" alt="The Enlightening IIM Bodh Gaya"></div>CampusFind · Student-built prototype, not an official institute service</footer>
 <script>
 document.getElementById('googleLogin').addEventListener('click',async()=>{
  const err=document.getElementById('loginError'); err.style.display='none';
