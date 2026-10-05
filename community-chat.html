@@ -2,7 +2,78 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#102b4e">
+<title>Community Chat | CampusFind · IIM Bodh Gaya</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = "https://wesajxsasftnrrnrtkrs.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "PASTE_YOUR_SUPABASE_PUBLISHABLE_KEY_HERE";
+const campusfindSupabase = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+let campusfindCommunityUser=null;
+async function signOutCampusFind(){
+  await campusfindSupabase.auth.signOut();
+  sessionStorage.removeItem("campusfind_student_email");
+  sessionStorage.removeItem("campusfind_student_name");
+  location.replace("login.html");
+}
+</script>
+<style>
+:root{--navy:#102b4e;--navy2:#193f68;--gold:#e8bd67;--ink:#19283a;--muted:#657487;--bg:#f4f6f9;--line:#e2e8ef}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #91b9df;outline-offset:2px}
+.topbar{background:var(--navy);color:white;padding:12px max(20px,calc((100% - 1180px)/2));display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;box-shadow:0 3px 14px #102b4e18}.brand{display:flex;align-items:center;gap:15px}.crest{width:190px;height:82px;flex:0 0 190px;object-fit:contain;display:block}.brand-title{font-weight:800;font-size:18px;letter-spacing:.2px}.brand-sub{font-size:10px;color:#c7d4e3;text-transform:uppercase;letter-spacing:1.3px;margin-top:3px}.nav a{color:#e7edf4;text-decoration:none;border:1px solid #ffffff40;padding:10px 13px;border-radius:8px;font-size:13px}.nav a:hover{background:#ffffff15}.nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.account-pill{display:flex;align-items:center;gap:9px;color:#fff;background:#ffffff12;border:1px solid #ffffff35;border-radius:999px;padding:5px 12px 5px 6px;font-size:12px;font-weight:750;max-width:220px}.account-icon{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--gold);color:var(--navy);flex:0 0 30px}.account-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:145px}
+main{max-width:1050px;margin:auto;padding:30px 22px 56px}.intro{background:linear-gradient(115deg,#102b4e,#193f68);color:white;border-radius:18px;padding:27px 30px;margin-bottom:20px}.eyebrow{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#f3ce80;font-weight:850}.intro h1{font-size:clamp(28px,4vw,38px);margin:9px 0}.intro p{color:#d8e3ef;line-height:1.6;margin:0;max-width:720px}.chip{display:inline-block;font-size:10px;font-weight:850;color:#805b17;background:#fff0cf;padding:5px 8px;border-radius:6px;margin-top:15px}
+.panel{background:white;border:1px solid var(--line);border-radius:16px;padding:23px}.panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap}.panel h2{margin:0 0 5px;color:var(--navy);font-size:22px}.panel-head p{margin:0;color:var(--muted);font-size:13px;line-height:1.5}.chat-layout{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(260px,.75fr);gap:18px;margin-top:18px}.chat-feed{display:flex;flex-direction:column;gap:10px;min-width:0}.chat-message{border:1px solid var(--line);background:#f9fbfd;border-radius:12px;padding:12px 14px;overflow-wrap:anywhere}.chat-message-top{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}.chat-message-top strong{font-size:13px;color:var(--navy)}.chat-time{font-size:10px;color:var(--muted)}.chat-message p{margin:7px 0 0;font-size:13px;line-height:1.55;white-space:pre-wrap}.demo-chip{font-size:9px;font-weight:800;color:#805b17;background:#fff0cf;padding:3px 6px;border-radius:5px;margin-left:5px}.compose{background:#f4f7fa;border:1px solid var(--line);border-radius:12px;padding:15px;align-self:start}.compose h3{margin:0 0 12px;color:var(--navy);font-size:16px}.field{display:flex;flex-direction:column;gap:6px;margin-bottom:11px}.field label{font-size:12px;font-weight:800;color:#405064}.field input,.field textarea{width:100%;border:1px solid #d8e0e8;border-radius:8px;padding:11px;background:white}.field textarea{resize:vertical;min-height:105px}.btn{border:0;border-radius:9px;padding:12px 16px;font-weight:800}.gold{background:var(--gold);color:#17283c;width:100%}.empty{padding:20px;text-align:center;color:var(--muted);font-size:13px;background:#f9fbfd;border:1px dashed var(--line);border-radius:10px}.note{margin:12px 0 0;color:var(--muted);font-size:11px;line-height:1.55}.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#123d32;color:white;padding:12px 18px;border-radius:10px;display:none;z-index:20;box-shadow:0 5px 20px #0002;font-size:13px;max-width:90%;text-align:center}footer{background:#0b2039;color:#b8c6d7;padding:22px;text-align:center;font-size:12px}footer strong{color:white}.footer-small{margin-top:8px;color:#94a8bf;font-size:11px}.footer-brand{display:inline-flex;align-items:center;background:#fff;border-radius:7px;padding:5px 10px;margin-bottom:10px;max-width:min(347px,90%)}.footer-brand img{display:block;width:100%;height:auto}
+@media(max-width:800px){.chat-layout{grid-template-columns:1fr}}@media(max-width:540px){.crest{width:150px;height:68px;flex-basis:150px}.topbar{padding:13px 15px}.brand-title{font-size:17px}main{padding:18px 14px 40px}.intro{padding:23px 19px}.panel{padding:18px 15px}}
+</style>
+</head>
+<body>
+<header class="topbar"><div class="brand"><img class="crest" src="assets/iim-bodh-gaya-crest.png" alt="IIM Bodh Gaya crest"><div><div class="brand-title">CampusFind</div><div class="brand-sub">IIM Bodh Gaya · Lost &amp; Found</div></div></div><nav class="nav"><div class="account-pill" title="Signed-in account"><span class="account-icon" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M5 21v-2a7 7 0 0 1 14 0v2"></path></svg></span><span class="account-name" id="accountName">Student</span></div><a href="index.html">← Back to CampusFind</a> <a href="#" onclick="signOutCampusFind();return false;">Sign out</a></nav></header>
+<main>
+<section class="intro"><div class="eyebrow">One campus. One community.</div><h1>Campus Community Chat</h1><p>Share a short message about a lost or found belonging and help classmates connect. For detailed reports, use the CampusFind item board.</p><span class="chip">LOCAL DEMO CHAT</span></section>
+<section class="panel" aria-labelledby="chatTitle"><div class="panel-head"><div><h2 id="chatTitle">Campus conversation</h2><p>Recent messages appear here. Please keep your messages respectful and avoid sharing personal information.</p></div></div>
+<div class="chat-layout"><div><div id="chatFeed" class="chat-feed" aria-live="polite"></div><p class="note">Privacy reminder: do not post phone numbers, college registration numbers, passwords, ID-card numbers, or other private information. This is a prototype, not an official institute service.</p></div>
+<form class="compose" id="chatForm"><h3>Post a message</h3><div class="field"><label for="chatMessage">Message *</label><textarea id="chatMessage" required maxlength="250" placeholder="e.g. Has anyone seen a black notebook near the library?"></textarea></div><button class="btn gold" type="submit">Send message →</button><p class="note">Messages are saved in this browser only. They are not shared across students or devices.</p></form></div></section>
+</main>
+<footer><div class="footer-brand"><img src="assets/iim-bodh-gaya-wordmark.png" alt="The Enlightening IIM Bodh Gaya"></div><br><strong>CampusFind · IIM Bodh Gaya</strong><div class="footer-small">A student-built Lost &amp; Found portal concept · Unofficial prototype for IT Committee selection</div></footer><div class="toast" id="toast" role="status"></div>
+<script>
+const CHAT_STORAGE_KEY = "campusfind_iimbg_chat_v1";
+const demoChatMessages = [
+ {id:"chat-demo-1",name:"Sample Student",message:"Has anyone seen a blue water bottle near the Academic Building? Please check the item board too.",createdAt:"2026-10-02T06:30:00.000Z",demo:true},
+ {id:"chat-demo-2",name:"Sample Campus Desk",message:"A notebook was found near Annapurna Mess. Please use the Found tab and verify identifying details before collecting it.",createdAt:"2026-10-02T06:15:00.000Z",demo:true}
+];
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function loadMessages(){try{const saved=localStorage.getItem(CHAT_STORAGE_KEY);if(saved){const parsed=JSON.parse(saved);if(Array.isArray(parsed))return parsed;}}catch(e){}return demoChatMessages.map(m=>({...m}));}
+let chatMessages=loadMessages();
+let signedInName="Student";
+function saveMessages(){try{localStorage.setItem(CHAT_STORAGE_KEY,JSON.stringify(chatMessages));}catch(e){toast("Could not save chat in this browser. Check storage settings.");}}
+function formatDate(value){const d=new Date(value);if(Number.isNaN(d.getTime()))return "Just now";return d.toLocaleString("en-IN",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"});}
+function renderMessages(){const feed=document.getElementById("chatFeed");feed.innerHTML=chatMessages.length?chatMessages.slice(-30).reverse().map(m=>`<article class="chat-message"><div class="chat-message-top"><strong>${esc(m.name)}${m.demo?'<span class="demo-chip">SAMPLE</span>':''}</strong><span class="chat-time">${esc(formatDate(m.createdAt))}</span></div><p>${esc(m.message)}</p></article>`).join(""):'<div class="empty">No messages yet. Start the campus conversation.</div>';}
+function toast(message){const el=document.getElementById("toast");el.textContent=message;el.style.display="block";window.setTimeout(()=>el.style.display="none",2600);}
+document.getElementById("chatForm").addEventListener("submit",e=>{e.preventDefault();if(!campusfindCommunityUser){toast("Please sign in again.");return;}const name=signedInName,message=document.getElementById("chatMessage").value.trim();if(!message){toast("Please enter a message.");return;}chatMessages.push({id:"chat-"+Date.now()+"-"+Math.random().toString(36).slice(2,6),name,message,createdAt:new Date().toISOString(),demo:false});chatMessages=chatMessages.slice(-100);saveMessages();document.getElementById("chatMessage").value="";renderMessages();toast("Message added to this browser's demo chat.");});
+window.addEventListener("storage",e=>{if(e.key===CHAT_STORAGE_KEY){chatMessages=loadMessages();renderMessages();}});
+async function initCommunityAuth(){
+  const {data:{session}}=await campusfindSupabase.auth.getSession();
+  if(!session?.user){location.replace("login.html");return;}
+  campusfindCommunityUser=session.user;
+  const email=session.user.email||"";
+  signedInName=session.user.user_metadata?.full_name||session.user.user_metadata?.name||email.split("@")[0]||"Student";
+  sessionStorage.setItem("campusfind_student_email",email);
+  sessionStorage.setItem("campusfind_student_name",signedInName);
+  document.getElementById("accountName").textContent=signedInName;
+  document.getElementById("accountName").title=signedInName;
+  renderMessages();
+}
+campusfindSupabase.auth.onAuthStateChange((_event,session)=>{if(!session)location.replace("login.html");});
+initCommunityAuth();
+</script>
+</body>
+</html>
+device-width, initial-scale=1.0">
 <meta name="theme-color" content="#102b4e">
 <title>Community Chat | CampusFind · IIM Bodh Gaya</title>
 <script>
