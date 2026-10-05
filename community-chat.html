@@ -5,10 +5,71 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#102b4e">
 <title>Community Chat | CampusFind · IIM Bodh Gaya</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// Demo-only access gate. Client-side checks are not secure authentication.
-if (!sessionStorage.getItem('campusfind_student_email')) location.replace('login.html');
-function signOutCampusFind(){sessionStorage.removeItem('campusfind_student_email');location.replace('login.html');}
+const SUPABASE_URL='https://wesajxsasftnrrnrtkrs.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_NxhXpmOqpRM_gECgdnLixw_UPNuIxAg';
+const campusfindSupabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const ALLOWED_DOMAIN='@iimbg.ac.in';
+let campusfindCommunityUser=null;
+let signedInName='Student';
+let communityAuthReady=Promise.resolve(null);
+
+function goToLogin(){window.location.assign('login.html');}
+function updateCommunityAccount(user){
+  campusfindCommunityUser=user||null;
+  const name=user?.user_metadata?.full_name||user?.user_metadata?.name||user?.email?.split('@')[0]||'Student';
+  signedInName=name;
+  const el=document.getElementById('accountName');
+  if(el){el.textContent=name;el.title=name;}
+  if(user){
+    sessionStorage.setItem('campusfind_student_email',(user.email||'').toLowerCase());
+    sessionStorage.setItem('campusfind_student_name',name);
+  }
+}
+
+async function initCommunityAuth(){
+  const {data:{session},error}=await campusfindSupabase.auth.getSession();
+  if(error){console.error('Community auth error:',error);return null;}
+  const user=session?.user||null;
+  if(!user){goToLogin();return null;}
+  if(!(user.email||'').toLowerCase().endsWith(ALLOWED_DOMAIN)){
+    await campusfindSupabase.auth.signOut();
+    sessionStorage.removeItem('campusfind_student_email');
+    sessionStorage.removeItem('campusfind_student_name');
+    alert('Please sign in with your IIM Bodh Gaya Google account.');
+    goToLogin();
+    return null;
+  }
+  updateCommunityAccount(user);
+  renderMessages();
+  return user;
+}
+
+async function refreshCommunityAuth(){
+  communityAuthReady=initCommunityAuth();
+  return communityAuthReady;
+}
+
+async function signOutCampusFind(){
+  await campusfindSupabase.auth.signOut();
+  campusfindCommunityUser=null;
+  sessionStorage.removeItem('campusfind_student_email');
+  sessionStorage.removeItem('campusfind_student_name');
+  goToLogin();
+}
+
+campusfindSupabase.auth.onAuthStateChange((event,session)=>{
+  if(event==='SIGNED_OUT'){
+    campusfindCommunityUser=null;
+    goToLogin();
+    return;
+  }
+  if(session?.user) updateCommunityAccount(session.user);
+});
+
+document.addEventListener('DOMContentLoaded',()=>{refreshCommunityAuth();});
+window.addEventListener('pageshow',()=>{refreshCommunityAuth();});
 </script>
 <style>
 :root{--navy:#102b4e;--navy2:#193f68;--gold:#e8bd67;--ink:#19283a;--muted:#657487;--bg:#f4f6f9;--line:#e2e8ef}
@@ -37,16 +98,12 @@ const demoChatMessages = [
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function loadMessages(){try{const saved=localStorage.getItem(CHAT_STORAGE_KEY);if(saved){const parsed=JSON.parse(saved);if(Array.isArray(parsed))return parsed;}}catch(e){}return demoChatMessages.map(m=>({...m}));}
 let chatMessages=loadMessages();
-const signedInName=sessionStorage.getItem("campusfind_student_name")||"Student";
-document.getElementById("accountName").textContent=signedInName;
-document.getElementById("accountName").title=signedInName;
 function saveMessages(){try{localStorage.setItem(CHAT_STORAGE_KEY,JSON.stringify(chatMessages));}catch(e){toast("Could not save chat in this browser. Check storage settings.");}}
 function formatDate(value){const d=new Date(value);if(Number.isNaN(d.getTime()))return "Just now";return d.toLocaleString("en-IN",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"});}
 function renderMessages(){const feed=document.getElementById("chatFeed");feed.innerHTML=chatMessages.length?chatMessages.slice(-30).reverse().map(m=>`<article class="chat-message"><div class="chat-message-top"><strong>${esc(m.name)}${m.demo?'<span class="demo-chip">SAMPLE</span>':''}</strong><span class="chat-time">${esc(formatDate(m.createdAt))}</span></div><p>${esc(m.message)}</p></article>`).join(""):'<div class="empty">No messages yet. Start the campus conversation.</div>';}
 function toast(message){const el=document.getElementById("toast");el.textContent=message;el.style.display="block";window.setTimeout(()=>el.style.display="none",2600);}
-document.getElementById("chatForm").addEventListener("submit",e=>{e.preventDefault();const name=signedInName,message=document.getElementById("chatMessage").value.trim();if(!message){toast("Please enter a message.");return;}chatMessages.push({id:"chat-"+Date.now()+"-"+Math.random().toString(36).slice(2,6),name,message,createdAt:new Date().toISOString(),demo:false});chatMessages=chatMessages.slice(-100);saveMessages();document.getElementById("chatMessage").value="";renderMessages();toast("Message added to this browser's demo chat.");});
+document.getElementById("chatForm").addEventListener("submit",e=>{e.preventDefault();if(!campusfindCommunityUser){toast("Please sign in again.");return;}const name=signedInName,message=document.getElementById("chatMessage").value.trim();if(!message){toast("Please enter a message.");return;}chatMessages.push({id:"chat-"+Date.now()+"-"+Math.random().toString(36).slice(2,6),name,message,createdAt:new Date().toISOString(),demo:false});chatMessages=chatMessages.slice(-100);saveMessages();document.getElementById("chatMessage").value="";renderMessages();toast("Message added to this browser's demo chat.");});
 window.addEventListener("storage",e=>{if(e.key===CHAT_STORAGE_KEY){chatMessages=loadMessages();renderMessages();}});
-renderMessages();
 </script>
 </body>
 </html>
